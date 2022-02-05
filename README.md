@@ -1,6 +1,6 @@
 # Pydictionary
-python dictionary.
-now just use file csv for translate and has offline. 
+python dictionary.\n
+now just use file csv for translate and has offline.\n 
 can add another file csv for translate.
 ![alt text](https://github.com/AmirhosseinAbutalebi/Pydictionary/blob/master/Screenshot1.png)
 
