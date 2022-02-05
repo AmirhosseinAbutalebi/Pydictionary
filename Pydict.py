@@ -26,6 +26,15 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
+        self.radioButtonEng = QtWidgets.QRadioButton(MainWindow)
+        self.radioButtonEng.setGeometry(QtCore.QRect(80, 250, 80, 20))
+        self.radioButtonEng.setChecked(True)
+        self.radioButtonEng.setObjectName("radioButtonEnglish")
+
+        self.radioButtonPer = QtWidgets.QRadioButton(MainWindow)
+        self.radioButtonPer.setGeometry(QtCore.QRect(170, 250, 80, 20))
+        self.radioButtonPer.setObjectName("radioButtonPersian")
+
         self.submitButton = QtWidgets.QPushButton(self.centralwidget)
         self.submitButton.setGeometry(QtCore.QRect(100, 60, 110, 40))
         self.submitButton.setObjectName("submitButton")
@@ -83,6 +92,16 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
+        self.radioButtonEng.setText(_translate("WizardPage", "English"))
+        self.radioButtonPer.setText(_translate("WizardPage", "Persian"))
+
+    def checkRadiobtn(self):
+        radioBtnSelected = ""
+        if self.radioButtonEng.isChecked():
+            radioBtnSelected = self.radioButtonEng.text()
+        else:
+            radioBtnSelected = self.radioButtonPer.text()
+        return radioBtnSelected
 
     def setText(self):
         string = self.getString.toPlainText()
@@ -108,13 +127,26 @@ class Ui_MainWindow(object):
         msg.setStandardButtons(QMessageBox.Ok)
         e = msg.exec_()
 
+    def selectLanguage(self):
+        languageSelected = self.checkRadiobtn().lower()
+        languageTranslate = ""
+        if languageSelected == "persian":
+            languageTranslate = "english"
+        else:
+            languageTranslate = "farsi"
+
+        if languageSelected == "persian":
+            languageSelected = "farsi"
+        return languageTranslate, languageSelected
+
     def translate(self, df):
         inputText = self.setText()
+        lt, ls = self.selectLanguage()
         try:
             for i in range(len(df)):
-                if inputText in df["english"][i]:
-                    indexfindword = df.index[df['english']==inputText].tolist().pop()
-                    return  df["farsi"][indexfindword]
+                if inputText in df[ls][i]:
+                    indexfindword = df.index[df[ls] == inputText].tolist().pop()
+                    return df[lt][indexfindword]
                     break
         except:
             self.messageError()
