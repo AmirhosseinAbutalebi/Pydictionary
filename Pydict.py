@@ -9,16 +9,19 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import pandas
 
 
 class Ui_MainWindow(object):
+
+    pathCsv = "Dict.csv"
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         icon = QtGui.QIcon("PydictLogo.png")
         MainWindow.setWindowIcon(icon)
-        MainWindow.resize(318, 440)
+        MainWindow.resize(318, 350)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -39,7 +42,7 @@ class Ui_MainWindow(object):
         self.labelForTranslate.setObjectName("labelForTranslate")
 
         self.labelForShowLogo = QtWidgets.QLabel(self.centralwidget)
-        self.labelForShowLogo.setGeometry(QtCore.QRect(130, 350, 61, 51))
+        self.labelForShowLogo.setGeometry(QtCore.QRect(130, 260, 61, 51))
         self.labelForShowLogo.setPixmap(QtGui.QPixmap("PydictLogo.png"))
         self.labelForShowLogo.setScaledContents(True)
         self.labelForShowLogo.setObjectName("labelForShowLogo")
@@ -59,7 +62,7 @@ class Ui_MainWindow(object):
 
         self.actionOpen = QtWidgets.QAction(MainWindow)
         self.actionOpen.setObjectName("actionOpen")
-        self.actionOpen.triggered.connect(self.openCsv)
+        self.actionOpen.triggered.connect(self.changeCsv)
 
         self.actionExit = QtWidgets.QAction(MainWindow)
         self.actionExit.setObjectName("actionExit")
@@ -74,7 +77,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Pydict"))
         self.submitButton.setText(_translate("MainWindow", "Translate"))
         self.labelForTranslate.setText(_translate("MainWindow", ""))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
@@ -85,17 +88,44 @@ class Ui_MainWindow(object):
         string = self.getString.toPlainText()
         return string
 
-    def openCsv(self):
+    def changeCsv(self):
         csvFile = QFileDialog.getOpenFileName()
-        csvdict = pandas.read_csv(csvFile)
-        print(csvdict)
+        splitpath = csvFile[0].split("/")
+        if ".csv" in splitpath[-1]:
+            self.pathCsv = csvFile[0]
+
+    def readCsvFile(self):
+        dataFrameDict = pandas.read_csv(self.pathCsv)
+        return dataFrameDict
+
+    def messageError(self):
+        icon = QtGui.QIcon("PydictLogo.png")
+        msg = QMessageBox()
+        msg.setWindowIcon(icon)
+        msg.setWindowTitle("Pydict")
+        msg.setText("Word not Found.")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setStandardButtons(QMessageBox.Ok)
+        e = msg.exec_()
+
+    def translate(self, df):
+        inputText = self.setText()
+        try:
+            for i in range(len(df)):
+                if inputText in df["english"][i]:
+                    indexfindword = df.index[df['english']==inputText].tolist().pop()
+                    return  df["farsi"][indexfindword]
+                    break
+        except:
+            self.messageError()
+
 
     def exitProgram(self):
         exit(0)
 
     def translatebtn(self):
-        self.labelForTranslate.setText(self.setText())
-
+        textShow = self.translate(self.readCsvFile())
+        self.labelForTranslate.setText(textShow)
 
 if __name__ == "__main__":
     import sys
