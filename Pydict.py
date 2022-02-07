@@ -10,8 +10,12 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from bs4 import BeautifulSoup
+import requests
 import pandas
+import urllib3, urllib
 
+baseUrl = "https://translate.google.com/"
 
 class Ui_MainWindow(object):
 
@@ -117,15 +121,33 @@ class Ui_MainWindow(object):
         dataFrameDict = pandas.read_csv(self.pathCsv)
         return dataFrameDict
 
-    def messageError(self):
+    def messageError(self, message):
         icon = QtGui.QIcon("PydictLogo.png")
         msg = QMessageBox()
         msg.setWindowIcon(icon)
         msg.setWindowTitle("Pydict")
-        msg.setText("Word not Found.")
+        msg.setText(message)
         msg.setIcon(QMessageBox.Warning)
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QMessageBox.Retry)
         e = msg.exec_()
+
+    def searchInSite(self):
+        inputText = self.setText()
+        inputText = inputText.replace(" ","+")
+        lt, ls = self.selectLanguage()
+        if lt == "farsi":
+            lt = "fa"
+        else:
+            lt = "en"
+        if ls == "farsi":
+            ls = "fa"
+        else:
+            ls = "en"
+        urlTraslate = baseUrl + "?sl="+ls+"&tl="+lt+"&text="+inputText+"&op=translate"
+        getInfo = requests.get(urlTraslate)
+        getPage = BeautifulSoup(getInfo.content, "html5lib")
+        div = getPage.find_all('div', {"class": "J0lOec"})
+        self.labelForTranslate.setText(div.get_text())
 
     def selectLanguage(self):
         languageSelected = self.checkRadiobtn().lower()
@@ -144,12 +166,15 @@ class Ui_MainWindow(object):
         lt, ls = self.selectLanguage()
         try:
             for i in range(len(df)):
-                if inputText in df[ls][i]:
+                if df[ls][i] == inputText:
                     indexfindword = df.index[df[ls] == inputText].tolist().pop()
                     return df[lt][indexfindword]
-                    break
+                else:
+                    continue
+            """self.messageError("not exist in this database.we have try in google translate.")
+            self.searchInSite()"""
         except:
-            self.messageError()
+            self.messageError("We have find Error!!!")
 
 
     def exitProgram(self):
